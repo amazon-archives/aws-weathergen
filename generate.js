@@ -1,6 +1,7 @@
-#!/usr/local/bin/node
+#!/bin/env node
+
 /*
- * Copyright 2015-2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * Copyright 2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
@@ -29,7 +30,6 @@ var cli = require('cli')
 var crypto = require('crypto')
 
 var options = cli.parse({
-  // station: ['s', 'Station id', 'string', false],
   sensor: ['s', 'Sensor Id', 'string', false],
   state: ['t', 'State', 'string', 'false'],
   city: ['c', 'City', 'string', false],

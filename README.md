@@ -73,6 +73,13 @@ An exmaple command line would be
 
 ```./generate.js --state "California" --city "Palo Alto" --longtitude "-122.142776" --latitude "37.399782" --sensor "sensor_1"```
 
+or 
+
+```./generate.js --state "Washington" --city "Kent" --longtitude "-122.234840" --latitude "47.380932" --sensor “sensor_1"```
+
+
+Should you need to find the lat/long for a specific US city you can use [this](http://www.latlong.net/place/kent-wa-usa-22218.html) site to assit you.
+
 The output on the command-line will look like
 
 ```
@@ -84,7 +91,7 @@ The output on the command-line will look like
 
 This will generate a stream of weather data on an MQTT topic in the following format
 
-```weather/[state]/[city]/[type: rain|temp|vib|ws]```
+```weather/[state]/[city]/[rain|temp|vib|ws]```
 
 Hence the following topics for this example are
 
@@ -135,6 +142,15 @@ This will return the stream of data such as below
 {"sensor_timestamp":1503873945227,"sensor_value":61.97056547619048,"direction":-1}
 {"sensor_timestamp":1503873946231,"sensor_value":61.97051984126984,"direction":-1}
 {"sensor_timestamp":1503873947233,"sensor_value":61.97047420634921,"direction":-1}
+```
+
+Standard MQTT topic subscription masks are also supported. Consider
+
+```bash
+mqtt subscribe -h 52.63.88.94 -t "#"
+mqtt subscribe -h 52.63.88.94 -t "weather/Washington/Kent/ws"
+mqtt subscribe -h 52.63.88.94 -t "weather/Washington/Kent/#"
+mqtt subscribe -h 52.63.88.94 -t "weather/Washington/+/#" 
 ```
 
 

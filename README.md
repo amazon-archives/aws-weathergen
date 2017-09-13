@@ -13,9 +13,47 @@ We use the weather forecast and history API from our friends at forecast.io/dark
 
 ## Requirements
 - node.js => v6.11.2
-- An API key from forecast.io
+- An API key from https://darksky.net/dev/register
 
-## Installation
+## Using the provided CloudFormation 
+
+We have provided a very basic cloudformation template which will stand up a simple Amazon Linux EC2 instance in a stand-alone VPC with a public IP address. The cloudformation can be found at ``` aws/cfn/stacks/weatherGen```.
+
+Three helper scripts have been provided.
+
+- create.sh - creates the cloudformation stack
+- delete.sh - deletes an existing cloudformation stack
+- update.sh - updates the cloudformation stack
+
+```stack.json``` is the cloudoformation template. You should only need to update the basic pararmeters at the top of the file.
+
+The ```create.sh``` script will provide the following output 
+
+```json
+[
+  {
+    "Description": "VPC Id",
+    "ExportName": "weatherGen-VPC-Id",
+    "OutputKey": "weatherGenVPCId",
+    "OutputValue": "vpc-f58cd791"
+  },
+  {
+    "Description": "Public IP Address",
+    "ExportName": "weatherGen-EC2-PublicIp",
+    "OutputKey": "IPAddress",
+    "OutputValue": "54.79.21.147"
+  }
+]
+```
+
+You can then access the EC2 instance using SSH.
+
+``` ssh ec2-user@instance.ip.address -i path/to/your/key ```
+
+*** Please Note: *** You will need a functional AWS account with the AWS CLI tools installed. Please refer [here]( http://docs.aws.amazon.com/cli/latest/userguide/installing.html) for how to install and configure the AWS CLI tools.
+
+
+## Local Installation
 
 - After cloning this repository, the application dependencies must be installed. you can use either NPM or yarn.
 
@@ -80,7 +118,12 @@ You can subscribe to the streams using any standards complaint MQTT client. For 
 Using [MQTT.js](https://www.npmjs.com/package/mqtt) you can subscribe using the following:
 
 ```bash 
-mqtt subscribe -h localhost -t "weather/California/Palo Alto/ws" ``` or to any of the sensorsm, such as ```mqtt subscribe -h localhost -t "weather/California/Palo Alto/temp"
+mqtt subscribe -h localhost -t "weather/California/Palo Alto/ws" 
+``` 
+or to any of the sensors, such as 
+
+```bash
+mqtt subscribe -h localhost -t "weather/California/Palo Alto/temp"
 ```
 
 This will return the stream of data such as below

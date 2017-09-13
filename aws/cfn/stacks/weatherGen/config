@@ -1,0 +1,3 @@
+STACK_NAME=weatherGen
+S3_BUCKET=s3://teichtah-lambda-functions
+REGION=ap-southeast-2

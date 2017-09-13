@@ -1,0 +1,252 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "EnvironmentName": {
+      "Description": "The string that will be prefixed to each instance name",
+      "Type": "String",
+      "MinLength": "3",
+      "MaxLength": "16",
+      "Default": "weatherGen",
+      "AllowedPattern": "[a-zA-Z0-9]*",
+      "ConstraintDescription": "Environment names must be 3-16 characters and contain only a-z and 0-9."
+    },
+    "KeyPairName": {
+      "Description": "Name of the key pair to use for EC2",
+      "Type": "String",
+      "MinLength": "3",
+      "MaxLength": "32",
+      "Default": "teichtahlAWS-own",
+      "AllowedPattern": "[\\x20-\\x7E]*",
+      "ConstraintDescription": "can contain only ASCII characters."
+    },
+    "AMI": {
+      "Description": "Name of the AMI id to use",
+      "Type": "String",
+      "MinLength": "3",
+      "MaxLength": "32",
+      "Default": "ami-30041c53"
+    },
+    "InstanceType": {
+      "Description": "EC2 instance type",
+      "Type": "String",
+      "Default": "t2.micro"
+    }
+  },
+  "Resources": {
+    "VPC": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": "10.0.0.0/16",
+        "EnableDnsSupport": "true",
+        "EnableDnsHostnames": "true",
+        "InstanceTenancy": "default",
+        "Tags": [{
+          "Key": "Name",
+          "Value": "weatherGen"
+        }]
+      }
+    },
+    "RouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "Tags": [{
+          "Key": "Name",
+          "Value": "weatherGen"
+        }]
+      }
+    },
+    "DefaultRoute": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": "IGW",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "RouteTable"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "IGW"
+        }
+      }
+    },
+    "SubnetRouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "Subnet"
+        },
+        "RouteTableId": {
+          "Ref": "RouteTable"
+        }
+      }
+    },
+    "NAT": {
+      "DependsOn": "IGWAttachment",
+      "Type": "AWS::EC2::NatGateway",
+      "Properties": {
+        "AllocationId": {
+          "Fn::GetAtt": ["EIP", "AllocationId"]
+        },
+        "SubnetId": {
+          "Ref": "Subnet"
+        }
+      }
+    },
+    "EIP": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "Domain": "vpc"
+      }
+    },
+    "Subnet": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "CidrBlock": "10.0.0.0/24",
+        "AvailabilityZone": "ap-southeast-2a",
+        "Tags": [{
+          "Key": "Name",
+          "Value": "weatherGen"
+        }]
+      }
+    },
+    "IGW": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {
+        "Tags": [{
+          "Key": "Name",
+          "Value": "weatherGen"
+        }]
+      }
+    },
+    "IGWAttachment": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "InternetGatewayId": {
+          "Ref": "IGW"
+        },
+        "VpcId": {
+          "Ref": "VPC"
+        }
+      }
+    },
+    "IPAddress": {
+      "Type": "AWS::EC2::EIP",
+      "DependsOn": "IGWAttachment",
+      "Properties": {
+        "Domain": "vpc",
+        "InstanceId": {
+          "Ref": "EC2"
+        }
+      }
+    },
+    "EC2": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "ImageId": {
+          "Ref": "AMI"
+        },
+        "KeyName": {
+          "Ref": "KeyPairName"
+        },
+        "InstanceType": {
+          "Ref": "InstanceType"
+        },
+        "SecurityGroupIds": [{
+          "Ref": "InstanceSecurityGroup"
+        }],
+        "SubnetId": {
+          "Ref": "Subnet"
+        },
+        "Tags": [{
+          "Key": "Name",
+          "Value": "weatherGen"
+        }],
+        "BlockDeviceMappings": [{
+            "DeviceName": "/dev/sdm",
+            "Ebs": {
+              "VolumeType": "io1",
+              "Iops": "200",
+              "DeleteOnTermination": "true",
+              "VolumeSize": "20"
+            }
+          },
+          {
+            "DeviceName": "/dev/sdk",
+            "NoDevice": {}
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": ["", [
+              "#!/bin/bash\n",
+              "yum -y update\n",
+              "wget https://dl.yarnpkg.com/rpm/yarn.repo -O /etc/yum.repos.d/yarn.repo\n",
+              "curl -sL https://rpm.nodesource.com/setup_7.x | bash -\n",
+              "yum -y install nodejs yarn git\n",
+              "git clone https://github.com/awslabs/aws-weathergen.git\n",
+              "cd aws-weathergen\n",
+              "yarn install\n"
+            ]]
+          }
+        }
+      }
+    },
+    "InstanceSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "GroupDescription": "Enable SSH access via port 22",
+        "SecurityGroupIngress": [{
+            "IpProtocol": "tcp",
+            "FromPort": "22",
+            "ToPort": "22",
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "80",
+            "ToPort": "80",
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "1883",
+            "ToPort": "1883",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "weatherGenVPCId": {
+      "Value": {
+        "Ref": "VPC"
+      },
+      "Description": "VPC Id",
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-VPC-Id"
+        }
+      }
+    },
+    "IPAddress": {
+      "Value": {
+        "Fn::GetAtt": ["EC2", "PublicIp"]
+      },
+      "Description": "Public IP Address",
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-EC2-PublicIp"
+        }
+      }
+    }
+  }
+}

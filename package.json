@@ -15,7 +15,7 @@
     "bootstrap": "^3.3.6",
     "bunyan": "^1.8.1",
     "bunyan-format": "^0.2.1",
-    "cli": "^0.11.2",
+    "cli": "^1.0.0",
     "cookie-parser": "^1.4.3",
     "distributions-normal": "^2.0.2",
     "forever": "^0.15.2",

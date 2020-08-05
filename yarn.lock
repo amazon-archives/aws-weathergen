@@ -466,9 +466,9 @@ chownr@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/chownr/-/chownr-1.0.1.tgz#e2a75042a9551908bebd25b8523d5f9769d79181"
 
-cli@^0.11.2:
-  version "0.11.3"
-  resolved "https://registry.yarnpkg.com/cli/-/cli-0.11.3.tgz#7b0cd3de990e452925667c0dbaffdc9f7f2a9a15"
+cli@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/cli/-/cli-1.0.0.tgz#ee07dfc1390e3f2e6a9957cf88e1d4bfa777719d"
   dependencies:
     exit "0.1.2"
     glob "^7.0.5"

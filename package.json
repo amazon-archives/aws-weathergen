@@ -20,7 +20,7 @@
     "distributions-normal": "^2.0.2",
     "forever": "^0.15.2",
     "forever-monitor": "^1.7.0",
-    "lodash": "^4.15.0",
+    "lodash": "^4.17.19",
     "mosca": "^2.0.1",
     "nvm-help": "^1.0.0",
     "q": "^1.4.1",
